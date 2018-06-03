@@ -1,83 +1,84 @@
 
 class Observable {
     constructor() {
-        this.subscribers = [];
+        this._subscribers = [];
+        this._onceSubscribers = [];
+    }
+
+    static count(){
+        return this.countPublish;
     }
 
     subscribe(callback) {
-        this.subscribers.push(callback);
-    };
-    
-    unsubscribe(callback) {
-        this.subscribers = this.subscribers.filter(subscriber => subscriber !== callback);
+        this._subscribers.push(callback);
+        console.log(callback.name);
     };
 
-    once(callback){
-        this.subscribers.push(callback);
-        
+    unsubscribe(callback) {
+        this._subscribers = this._subscribers.filter(subscriber => subscriber !== callback);
+    };
+
+    once(callback) {
+        this._onceSubscribers.push(callback);
     }
-    
+
     publish(news) {
-        this.subscribers.forEach(subscribers => { subscribers(news) });
+        this._subscribers.forEach(
+            subscriber => subscriber(news)
+        );
+        if(this._onceSubscribers.length > 0){
+            this._onceSubscribers.forEach(onceSubcriber => onceSubcriber(news));
+            this._onceSubscribers = [];
+        }
+        
     }
 }
 
 class User {
     constructor(name) {
-        this.name = name;
+        this._name = name;
         this.getNews = this.getNews.bind(this);
     }
 
     getNews(news) {
-        console.log(news + " for " + this.name);
+        console.log(`${news}  for ${this._name}`);
     };
 
 }
 
 class PublisherNews {
     constructor() {
-        this.news = []
-        this.counterNews = 0;
+        this._news = []
+        this._counterNews = 0;
     }
 
     createNews() {
         let news = "";
-        this.counterNews++;
-        news = "News # " + this.counterNews
-        this.news.push(news);
+        this._counterNews++;
+        news = `News # ${this._counterNews}`;
+        this._news.push(news);
         return news;
     }
-
-
 }
-
 
 let dailyNews = new PublisherNews();
 
-let user1 = new User("alex");
-let user2 = new User("den");
-let user3 = new User("sam");
+let alex = new User("alex");
+let den = new User("den");
+let sam = new User("sam");
 
 let observable = new Observable();
 
+observable.subscribe(alex.getNews);
+observable.subscribe(den.getNews);
+observable.subscribe(sam.getNews);
 
-observable.subscribe(user1.getNews);
-observable.subscribe(user2.getNews);
-observable.subscribe(user3.getNews);
-console.log(observable.subscribers);
-
+observable.publish(dailyNews.createNews()); 
+observable.unsubscribe(alex.getNews);
 observable.publish(dailyNews.createNews());
-observable.unsubscribe(user1.getNews);
+observable.publish(dailyNews.createNews());
+observable.once(alex.getNews);
+observable.publish(dailyNews.createNews());
 observable.publish(dailyNews.createNews());
 
 console.log("------");
-
-
-
-
-
-
-
-
-
-
