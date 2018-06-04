@@ -3,6 +3,8 @@ class Observable {
     constructor() {
         this._subscribers = [];
         this._onceSubscribers = [];
+        this._evenSubscribers = [];
+        this._countPublish = 0;
     }
 
     static count(){
@@ -23,14 +25,21 @@ class Observable {
     }
 
     publish(news) {
-        this._subscribers.forEach(
-            subscriber => subscriber(news)
-        );
+        this._countPublish++;
+        this._subscribers.forEach(subscriber => subscriber(news));
+        if((this._countPublish % 2) == 0){
+            this._evenSubscribers.forEach(evenSubscriber => evenSubscriber(news));
+        }
         if(this._onceSubscribers.length > 0){
             this._onceSubscribers.forEach(onceSubcriber => onceSubcriber(news));
             this._onceSubscribers = [];
         }
         
+    }
+
+    evenSubscribe(callback){
+        this._evenSubscribers.push(callback);
+
     }
 }
 
@@ -71,7 +80,7 @@ let observable = new Observable();
 
 observable.subscribe(alex.getNews);
 observable.subscribe(den.getNews);
-observable.subscribe(sam.getNews);
+observable.evenSubscribe(sam.getNews);
 
 observable.publish(dailyNews.createNews()); 
 observable.unsubscribe(alex.getNews);
