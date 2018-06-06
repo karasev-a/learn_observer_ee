@@ -5,35 +5,28 @@ class EventEm {
     }
 
     subscribe(nameSpace, callback) {
-        if (this._subscribers.hasOwnProperty(nameSpace)) {
-            this._subscribers[`${nameSpace}`].push(callback);
-        } else {
-            this._subscribers[`${nameSpace}`] = [];
-            this._subscribers[`${nameSpace}`].push(callback);
+        if (!this._subscribers[nameSpace]) {
+            this._subscribers[nameSpace] = [];
         }
+        this._subscribers[nameSpace].push(callback);
     };
 
     unsubscribe(nameSpace, callback) {
-        for(let key in this._subscribers){
-            if (key === nameSpace) {
-                let indexSub = this._subscribers[key].indexOf(callback);
-                if(indexSub >= 0){
-                    this._subscribers[key].splice(indexSub, 1);
-                }
-                //this._subscribers[key] = this._subscribers[key].filter(subscriber => subscriber !== callback);
+        if (this._subscribers[nameSpace]) {
+            let indexSub = this._subscribers[nameSpace].indexOf(callback);
+            if (indexSub >= 0) {
+                this._subscribers[nameSpace].splice(indexSub, 1);
             }
-            if(this._subscribers[key].length == 0){
-                delete this._subscribers[key];
-            }
+            //this._subscribers[key] = this._subscribers[key].filter(subscriber => subscriber !== callback);
         }
-
+        if (this._subscribers[nameSpace].length == 0) {
+            delete this._subscribers[nameSpace];
+        }
     };
 
     publish(nameSpace, news) {
-        for (let key in this._subscribers) {
-            if (key === nameSpace) {
-                this._subscribers[key].forEach(subscriber => subscriber(nameSpace, news) );
-            }
+        if (this._subscribers[nameSpace]) {
+            this._subscribers[nameSpace].forEach(subscriber => subscriber(nameSpace, news));
         }
     }
 }
@@ -84,8 +77,7 @@ ee.subscribe("it", sam.getNews);
 ee.subscribe("sport", sam.getNews);
 ee.subscribe("fishin", alex.getNews);
 
-
-dailyNews.createNews("sport");        
+dailyNews.createNews("sport");
 dailyNews.createNews("it");
 dailyNews.createNews("fishin");
 
@@ -95,8 +87,4 @@ dailyNews.createNews("sad");
 dailyNews.createNews("fishin");
 dailyNews.createNews("sport");
 
-ee.unsubscribe("it", sam.getNews);
-
 dailyNews.createNews("it");
-
-console.log(ee._subscribers);
